@@ -8,11 +8,13 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <link rel="stylesheet" href="css/leaflet.css"><link rel="stylesheet" href="css/L.Control.Locate.min.css">
         <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
         <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
         <style>
         #map {
-            width: 1015px;
-            height: 334px;
+            width: 1011px;
+            height: 501px;
         }
         </style>
         <title>CARTE INTERACTIVE DE VULNERABILITE </title>
@@ -30,6 +32,9 @@
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
         <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
         <script src="data/ci_region_1.js"></script>
         <script src="data/Departement_2.js"></script>
         <script src="data/LOC_MARS_2021_3.js"></script>
@@ -53,7 +58,7 @@
         }
         var map = L.map('map', {
             zoomControl:true, maxZoom:28, minZoom:1
-        }).fitBounds([[4.118431438254315,-13.208655472640874],[10.890019267223286,7.37062479980252]]);
+        }).fitBounds([[4.155305131734012,-9.758735777684816],[10.89001926722328,3.92224203979986]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -397,6 +402,334 @@
               addLabel(layer, i);
               i++;
         });
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"date": "date","COD_CS": "int","NOM": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+        var i = 0;
+        layer_Departement_2.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['NOM'] !== null?String('<div style="color: #000000; font-size: 10pt; font-family: \'MS Shell Dlg 2\', sans-serif;">' + layer.feature.properties['NOM']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_Departement_2'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_date_date1 = document.createElement("div");
+            div_date_date1.id = "div_date_date1";
+            div_date_date1.className= "filterselect";
+            document.getElementById("menu").appendChild(div_date_date1);
+            dat_date_date1 = document.createElement('input');
+            dat_date_date1.type = "text";
+            dat_date_date1.id = "dat_date_date1";
+            div_date_date1.appendChild(dat_date_date1);
+            var lab_date_date1 = document.createElement('div');
+            lab_date_date1.innerHTML  = 'date from';
+            lab_date_date1.className = 'filterlabel';
+            document.getElementById("div_date_date1").appendChild(
+                lab_date_date1);
+            var reset_date_date1 = document.createElement('div');
+            reset_date_date1.innerHTML = "clear";
+            reset_date_date1.className = 'filterlabel';
+            reset_date_date1.onclick = function() {
+                tail.DateTime("#dat_date_date1", {
+                    dateStart: 1616626800000,
+                    dateEnd: 1617058800000,
+                    dateFormat: 'YYYY-mm-dd',
+                    timeFormat: false,
+                    today: false,
+                    weekStart: 1,
+                    position: "left",
+                    closeButton: true,
+                    timeStepMinutes:1,
+                    timeStepSeconds: 1
+                }).selectDate(2021,3-1,25,0,0,0);
+                tail.DateTime("#dat_date_date1").reload()
+            }
+            document.getElementById("div_date_date1").appendChild(
+                reset_date_date1);
+            document.addEventListener("DOMContentLoaded", function(){
+                tail.DateTime("#dat_date_date1", {
+                    dateStart: 1616626800000,
+                    dateEnd: 1617058800000,
+                    dateFormat: 'YYYY-mm-dd',
+                    timeFormat: false,
+                    today: false,
+                    weekStart: 1,
+                    position: "left",
+                    closeButton: true,
+                    timeStepMinutes:1,
+                    timeStepSeconds: 1
+                }).selectDate(2021,3-1,25,0,0,0);
+                tail.DateTime("#dat_date_date1").reload()
+                tail.DateTime("#dat_date_date2", {
+                    dateStart: 1616626800000,
+                    dateEnd: 1617058800000,
+                    dateFormat: 'YYYY-mm-dd',
+                    timeFormat: false,
+                    today: false,
+                    weekStart: 1,
+                    position: "left",
+                    closeButton: true,
+                    timeStepMinutes:1,
+                    timeStepSeconds: 1
+                }).selectDate(2021,3-1,30,0,0,0);
+                tail.DateTime("#dat_date_date2").reload()
+                filterFunc()
+                dat_date_date1.onchange = function(){filterFunc()};
+                dat_date_date2.onchange = function(){filterFunc()};
+            });
+            var div_date_date2 = document.createElement("div");
+            div_date_date2.id = "div_date_date2";
+            div_date_date2.className= "filterselect";
+            document.getElementById("menu").appendChild(div_date_date2);
+            dat_date_date2 = document.createElement('input');
+            dat_date_date2.type = "text";
+            dat_date_date2.id = "dat_date_date2";
+            div_date_date2.appendChild(dat_date_date2);
+            var lab_date_date2 = document.createElement('div');
+            lab_date_date2.innerHTML  = 'date till';
+            lab_date_date2.className = 'filterlabel';
+            document.getElementById("div_date_date2")
+              .appendChild(lab_date_date2);
+            var reset_date_date2 = document.createElement('div');
+            reset_date_date2.innerHTML = "clear";
+            reset_date_date2.className = 'filterlabel';
+            reset_date_date2.onclick = function() {
+                tail.DateTime("#dat_date_date2", {
+                    dateStart: 1616626800000,
+                    dateEnd: 1617058800000,
+                    dateFormat: 'YYYY-mm-dd',
+                    timeFormat: false,
+                    today: false,
+                    weekStart: 1,
+                    position: "left",
+                    closeButton: true,
+                    timeStepMinutes:1,
+                    timeStepSeconds: 1
+                }).selectDate(2021,3-1,30,0,0,0);
+                tail.DateTime("#dat_date_date2").reload()
+            }
+            document.getElementById("div_date_date2").appendChild(
+                reset_date_date2);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_COD_CS = document.createElement("div");
+            div_COD_CS.id = "div_COD_CS";
+            div_COD_CS.className = "slider";
+            document.getElementById("menu").appendChild(div_COD_CS);
+            var lab_COD_CS = document.createElement('div');
+            lab_COD_CS.innerHTML  = 'COD_CS: <span id="val_COD_CS"></span>';
+            lab_COD_CS.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_COD_CS);
+            var reset_COD_CS = document.createElement('div');
+            reset_COD_CS.innerHTML = 'clear filter';
+            reset_COD_CS.className = 'filterlabel';
+            lab_COD_CS.className = 'filterlabel';
+            reset_COD_CS.onclick = function() {
+                sel_COD_CS.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_COD_CS);
+            var sel_COD_CS = document.getElementById('div_COD_CS');
+            noUiSlider.create(sel_COD_CS, {
+                connect: true,
+                start: [0, 1],
+                step: 1,
+                format: wNumb({
+                    decimals: 0,
+                    }),
+                range: {
+                min: 0,
+                max: 1
+                }
+            });
+            sel_COD_CS.noUiSlider.on('update', function (values) {
+            filterVals =[];
+            for (value in values){
+            filterVals.push(parseInt(value))
+            }
+            val_COD_CS = document.getElementById('val_COD_CS');
+            val_COD_CS.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_NOM = document.createElement('div');
+            div_NOM.id = "div_NOM";
+            div_NOM.className= "filterselect";
+            document.getElementById("menu").appendChild(div_NOM);
+            sel_NOM = document.createElement('select');
+            sel_NOM.multiple = true;
+            sel_NOM.size = 10;
+            sel_NOM.id = "sel_NOM";
+            var NOM_options_str = "<option value='' unselected></option>";
+            sel_NOM.onchange = function(){filterFunc()};
+            NOM_options_str  += '<option value="ABIDJAN">ABIDJAN</option>';
+            NOM_options_str  += '<option value="AGNEBY-TIASSA">AGNEBY-TIASSA</option>';
+            NOM_options_str  += '<option value="BAFING">BAFING</option>';
+            NOM_options_str  += '<option value="BAGOUE">BAGOUE</option>';
+            NOM_options_str  += '<option value="BELIER">BELIER</option>';
+            NOM_options_str  += '<option value="BERE">BERE</option>';
+            NOM_options_str  += '<option value="BOUNKANI">BOUNKANI</option>';
+            NOM_options_str  += '<option value="CAVALLY">CAVALLY</option>';
+            NOM_options_str  += '<option value="FOLON">FOLON</option>';
+            NOM_options_str  += '<option value="GBEKE">GBEKE</option>';
+            NOM_options_str  += '<option value="GBOKLE">GBOKLE</option>';
+            NOM_options_str  += '<option value="GOH">GOH</option>';
+            NOM_options_str  += '<option value="GONTOUGO">GONTOUGO</option>';
+            NOM_options_str  += '<option value="GRANDS PONTS">GRANDS PONTS</option>';
+            NOM_options_str  += '<option value="GUEMON">GUEMON</option>';
+            NOM_options_str  += '<option value="HAMBOL">HAMBOL</option>';
+            NOM_options_str  += '<option value="HAUT-SASSANDRA">HAUT-SASSANDRA</option>';
+            NOM_options_str  += '<option value="IFFOU">IFFOU</option>';
+            NOM_options_str  += '<option value="INDENIE-DJUABLIN">INDENIE-DJUABLIN</option>';
+            NOM_options_str  += '<option value="ISSIA">ISSIA</option>';
+            NOM_options_str  += '<option value="KABADOUGOU">KABADOUGOU</option>';
+            NOM_options_str  += '<option value="KONG">KONG</option>';
+            NOM_options_str  += '<option value="LA ME">LA ME</option>';
+            NOM_options_str  += '<option value="LOH-DJIBOUA">LOH-DJIBOUA</option>';
+            NOM_options_str  += '<option value="MARAHOUE">MARAHOUE</option>';
+            NOM_options_str  += '<option value="MORONOU">MORONOU</option>';
+            NOM_options_str  += '<option value="N&apos;ZI">N&apos;ZI</option>';
+            NOM_options_str  += '<option value="NAWA">NAWA</option>';
+            NOM_options_str  += '<option value="PORO">PORO</option>';
+            NOM_options_str  += '<option value="SAN-PEDRO">SAN-PEDRO</option>';
+            NOM_options_str  += '<option value="SUD-COMOE">SUD-COMOE</option>';
+            NOM_options_str  += '<option value="TCHOLOGO">TCHOLOGO</option>';
+            NOM_options_str  += '<option value="TEHINI">TEHINI</option>';
+            NOM_options_str  += '<option value="TONKPI">TONKPI</option>';
+            NOM_options_str  += '<option value="WORODOUGOU">WORODOUGOU</option>';
+            NOM_options_str  += '<option value="akoue-agban">akoue-agban</option>';
+            NOM_options_str  += '<option value="boguedia">boguedia</option>';
+            NOM_options_str  += '<option value="tehini">tehini</option>';
+            sel_NOM.innerHTML = NOM_options_str;
+            div_NOM.appendChild(sel_NOM);
+            var lab_NOM = document.createElement('div');
+            lab_NOM.innerHTML = 'NOM';
+            lab_NOM.className = 'filterlabel';
+            div_NOM.appendChild(lab_NOM);
+            var reset_NOM = document.createElement('div');
+            reset_NOM.innerHTML = 'clear filter';
+            reset_NOM.className = 'filterlabel';
+            reset_NOM.onclick = function() {
+                var options = document.getElementById("sel_NOM").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_NOM.appendChild(reset_NOM);
         resetLabels([layer_Departement_2]);
         map.on("zoomend", function(){
             resetLabels([layer_Departement_2]);
