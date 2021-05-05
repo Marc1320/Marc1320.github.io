@@ -11,8 +11,8 @@
         <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
         <style>
         #map {
-            width: 1011px;
-            height: 501px;
+            width: 1015px;
+            height: 334px;
         }
         </style>
         <title>CARTE INTERACTIVE DE VULNERABILITE </title>
@@ -53,7 +53,7 @@
         }
         var map = L.map('map', {
             zoomControl:true, maxZoom:28, minZoom:1
-        }).fitBounds([[4.155305131734012,-9.758735777684816],[10.89001926722328,3.92224203979986]]);
+        }).fitBounds([[4.118431438254315,-13.208655472640874],[10.890019267223286,7.37062479980252]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
