@@ -1,0 +1,1 @@
+var json_Kafolo_4 = {"type":"FeatureCollection","name":"Kafolo_4","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[{"type":"Feature","properties":{"Field1":"KAFOLO","X":356238.71,"Y":1059581.7,"date":"2021-03-29","text":"ATTAQUE JIHADISTE"},"geometry":{"type":"Point","coordinates":[-4.30999995968667,9.582999956748464]}}]}
