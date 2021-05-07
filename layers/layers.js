@@ -1,5 +1,5 @@
 ol.proj.proj4.register(proj4);
-ol.proj.get("EPSG:32630").setExtent([137655.554105, 728259.645438, 421181.928212, 868477.346805]);
+ol.proj.get("EPSG:32630").setExtent([374771.256484, 544992.264652, 516534.443538, 615101.115336]);
 var wms_layers = [];
 
 
@@ -34,10 +34,13 @@ var features_Avril_2021_2 = format_Avril_2021_2.readFeatures(json_Avril_2021_2,
 var jsonSource_Avril_2021_2 = new ol.source.Vector({
     attributions: ' ',
 });
-jsonSource_Avril_2021_2.addFeatures(features_Avril_2021_2);
+jsonSource_Avril_2021_2.addFeatures(features_Avril_2021_2);cluster_Avril_2021_2 = new ol.source.Cluster({
+  distance: 10,
+  source: jsonSource_Avril_2021_2
+});
 var lyr_Avril_2021_2 = new ol.layer.Vector({
                 declutter: true,
-                source:jsonSource_Avril_2021_2, 
+                source:cluster_Avril_2021_2, 
                 style: style_Avril_2021_2,
                 interactive: true,
                 title: '<img src="styles/legend/Avril_2021_2.png" /> Avril_2021'
@@ -48,10 +51,13 @@ var features_Avril_2021_2_3 = format_Avril_2021_2_3.readFeatures(json_Avril_2021
 var jsonSource_Avril_2021_2_3 = new ol.source.Vector({
     attributions: ' ',
 });
-jsonSource_Avril_2021_2_3.addFeatures(features_Avril_2021_2_3);
+jsonSource_Avril_2021_2_3.addFeatures(features_Avril_2021_2_3);cluster_Avril_2021_2_3 = new ol.source.Cluster({
+  distance: 10,
+  source: jsonSource_Avril_2021_2_3
+});
 var lyr_Avril_2021_2_3 = new ol.layer.Vector({
                 declutter: true,
-                source:jsonSource_Avril_2021_2_3, 
+                source:cluster_Avril_2021_2_3, 
                 style: style_Avril_2021_2_3,
                 interactive: true,
                 title: '<img src="styles/legend/Avril_2021_2_3.png" /> Avril_2021_2'
@@ -62,10 +68,13 @@ var features_Avril_kafolo_4 = format_Avril_kafolo_4.readFeatures(json_Avril_kafo
 var jsonSource_Avril_kafolo_4 = new ol.source.Vector({
     attributions: ' ',
 });
-jsonSource_Avril_kafolo_4.addFeatures(features_Avril_kafolo_4);
+jsonSource_Avril_kafolo_4.addFeatures(features_Avril_kafolo_4);cluster_Avril_kafolo_4 = new ol.source.Cluster({
+  distance: 10,
+  source: jsonSource_Avril_kafolo_4
+});
 var lyr_Avril_kafolo_4 = new ol.layer.Vector({
                 declutter: true,
-                source:jsonSource_Avril_kafolo_4, 
+                source:cluster_Avril_kafolo_4, 
                 style: style_Avril_kafolo_4,
                 interactive: true,
                 title: '<img src="styles/legend/Avril_kafolo_4.png" /> Avril_kafolo'
